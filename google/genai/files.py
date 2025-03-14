@@ -888,13 +888,14 @@ class Files(_api_module.BaseModule):
 
     if (
         response.http_headers is None
-        or 'X-Goog-Upload-URL' not in response.http_headers
+        or ('X-Goog-Upload-URL' not in response.http_headers and 'x-goog-upload-url' not in response.http_headers)
     ):
       raise KeyError(
           'Failed to create file. Upload URL did not returned from the create'
           ' file request.'
       )
-    upload_url = response.http_headers['X-Goog-Upload-URL']
+    upload_url = response.http_headers.get('X-Goog-Upload-URL', response.http_headers.get('x-goog-upload-url', None))
+    assert upload_url is not None, 'Upload URL is not found in the response headers.'
 
     if isinstance(file, io.IOBase):
       return_file = self._api_client.upload_file(
